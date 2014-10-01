@@ -134,6 +134,12 @@ module Types
   class Double < BaseFloat
   end
 
+  # This dummy type exists because apparently some mods use
+  # the "End" type for zero-length lists.
+  End = BaseInteger.make_subclass(8)
+  class End
+  end
+
   class String < BaseScalar
     def initialize(value)
       unless value.respond_to? :to_str
@@ -163,6 +169,31 @@ module Types
     end
 
     def to_s ; @value.dup ; end
+    alias_method :to_str, :to_s
+  end
+
+  class IntArray
+    include Private::Base
+
+    attr_reader :value
+
+    def initialize(value)
+      unless value.kind_of? Array
+        raise TypeError, "Array or array-like expected"
+      end
+      value.each do |v|
+        unless v.kind_of? Integer
+          raise TypeError, "Integer or integer-like expected in array (#{v.inspect})."
+        end
+      end
+      @value = Array.new(value)
+    end
+
+    def ==(other)
+      self.class == other.class && @value == other.value
+    end
+
+    def to_s ; @value.to_s ; end
     alias_method :to_str, :to_s
   end
 

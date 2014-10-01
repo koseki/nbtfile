@@ -147,12 +147,20 @@ def self.read(io)
         type = Types::List
       when tag == Tokens::TAG_Compound
         type = Types::Compound
+      when tag == Tokens::TAG_End
+        type = Types::End
       else
         raise TypeError, "Unexpected list type #{token.value}"
       end
       value = Types::List.new(type)
+      # It makes no sense to have selected TAG_End for a non-empty list.
+      if type == Types::End and value.length != 0
+        raise TypeError, "Can't have a non-empty list of TAG_End objects."
+      end
     when Tokens::TAG_Compound
       value = Types::Compound.new
+    when Tokens::TAG_Int_Array
+      value = Types::IntArray.new(token.value)
     when Tokens::TAG_End
       stack.pop
       next
@@ -207,6 +215,10 @@ class Writer
       token = Tokens::TAG_List
     when type == Types::Compound
       token = Tokens::TAG_Compound
+    when type == Types::IntArray
+      token = Tokens::TAG_Int_Array
+    when type == Types::End
+      token = Tokens::TAG_End
     else
       raise TypeError, "Unexpected list type #{type}"
     end
@@ -244,6 +256,8 @@ class Writer
         write_pair(k, v)
       end
       @emitter.emit_token(Tokens::TAG_End[nil, nil])
+    when Types::IntArray
+      @emitter.emit_token(Tokens::TAG_Int_Array[name, value.value])
     end
   end
 end
