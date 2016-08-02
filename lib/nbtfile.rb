@@ -51,8 +51,9 @@ def self.tokenize_uncompressed(io) #:yields: token
 end
 
 # Emit NBT tokens to a stream
-def self.emit(io, &block) #:yields: emitter
+def self.emit(io, mtime = nil, &block) #:yields: emitter
   gz = Zlib::GzipWriter.new(io)
+  gz.mtime = mtime unless mtime.nil?
   begin
     emit_uncompressed(gz, &block)
   ensure
@@ -249,8 +250,8 @@ class Writer
 end
 end
 
-def self.write(io, name, body)
-  emit(io) do |emitter|
+def self.write(io, name, body, mtime = nil)
+  emit(io, mtime) do |emitter|
     writer = Private::Writer.new(emitter)
     writer.write_pair(name, body)
   end
