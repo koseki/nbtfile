@@ -25,6 +25,7 @@ require 'zlib'
 require 'stringio'
 require 'yaml'
 
+require 'nbtfile/version'
 require 'nbtfile/string'
 require 'nbtfile/exceptions'
 require 'nbtfile/tokens'
